@@ -1,8 +1,0 @@
-.cproject
-.mxproject
-.project
-led_blink Debug.launch
-led_blink.ioc
-STM32F767ZITX_FLASH.ld
-STM32F767ZITX_RAM.ld
-.settings
