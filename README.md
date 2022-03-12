@@ -4,9 +4,9 @@
 > main file is saved at location '\<project-name>\Core\Src\main.c'
 
 ## USART - usart_virtualComPort
-Tx Pin: PD8
-Rx Pin: PD9
-   _________________________ 
+Tx Pin: PD8  
+Rx Pin: PD9  
+   _________________________   
   |           ______________|                       _______________
   |          |USART3        |                      | HyperTerminal |
   |          |              |                      |               |
