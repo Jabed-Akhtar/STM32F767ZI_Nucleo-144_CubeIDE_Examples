@@ -1,5 +1,4 @@
-<<<<<<< HEAD
+
 # STM32F767ZI_CubeIDE
-=======
-# STM32F767ZI_CubeIDE
->>>>>>> master
+
+> main file is saved at location '\<project-name>\Core\Src\main.c'
