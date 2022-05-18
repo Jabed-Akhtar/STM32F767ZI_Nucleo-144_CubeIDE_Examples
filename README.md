@@ -8,4 +8,4 @@ Tx Pin: PD8
 Rx Pin: PD9  
 
 ### STM32F4-Discovery Board
-![STM32F767ZI-Nucleo MCU](zz_docs/STM32F767ZI-Nucleo.jpg)
+![STM32F767ZI-Nucleo MCU](zz_docs/STM32F767ZI-Nucleo.jpg =250x)
