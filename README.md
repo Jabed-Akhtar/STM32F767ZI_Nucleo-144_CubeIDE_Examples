@@ -10,10 +10,10 @@
 | S.No. | Project                           | Short-Info     |
 |-------|-----------------------------------| ---            |
 | 1     | EXTI_Interrupt_PushButton_OnBoard | ---            |
-| 2     | led_blink                         | ---            |
+| 2     | LED_Blink                         | ---            |
 | 3     | led_blink_registerBased           | ---            |
 | 4     | pwm_TIM4_n_PWM_LED                | ---            |
-| 5     | rtos_freeRTOS_basic_ledBlink      | ---            |
+| 5     | RTOS_freeRTOS_Basic_LEDBlink      | ---            |
 | 6     | timer_TIM10_basic_ledBlink        | ---            |
 | 7     | usart_virtualComPort              | ---            |
 

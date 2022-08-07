@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (9-2020-q2-update)
+# Toolchain: GNU Tools for STM32 (10.3-2021.10)
 ################################################################################
 
 -include ../makefile.init
@@ -38,34 +38,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := rtos_freeRTOS_basic_ledBlink
+BUILD_ARTIFACT_NAME := RTOS_freeRTOS_Basic_LEDBlink
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-rtos_freeRTOS_basic_ledBlink.elf \
+RTOS_freeRTOS_Basic_LEDBlink.elf \
+
+MAP_FILES += \
+RTOS_freeRTOS_Basic_LEDBlink.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-rtos_freeRTOS_basic_ledBlink.list \
-
-OBJCOPY_BIN += \
-rtos_freeRTOS_basic_ledBlink.bin \
+RTOS_freeRTOS_Basic_LEDBlink.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: rtos_freeRTOS_basic_ledBlink.elf secondary-outputs
+main-build: RTOS_freeRTOS_Basic_LEDBlink.elf secondary-outputs
 
 # Tool invocations
-rtos_freeRTOS_basic_ledBlink.elf: $(OBJS) $(USER_OBJS) S:\zzz_VVI_Others\ProjLearn\Project2_Master\projects_ws\vernetzungMechSys_STM32F7_CubeIDE_ws\rtos_freeRTOS_basic_ledBlink\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "rtos_freeRTOS_basic_ledBlink.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"S:\zzz_VVI_Others\ProjLearn\Project2_Master\projects_ws\vernetzungMechSys_STM32F7_CubeIDE_ws\rtos_freeRTOS_basic_ledBlink\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="rtos_freeRTOS_basic_ledBlink.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+RTOS_freeRTOS_Basic_LEDBlink.elf RTOS_freeRTOS_Basic_LEDBlink.map: $(OBJS) $(USER_OBJS) S:\zzz_StudyProjs\ProjLearn\Project2_Master\projects_ws\vernetzungMechSys_STM32F7_CubeIDE_ws\RTOS_freeRTOS_Basic_LEDBlink\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "RTOS_freeRTOS_Basic_LEDBlink.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"S:\zzz_StudyProjs\ProjLearn\Project2_Master\projects_ws\vernetzungMechSys_STM32F7_CubeIDE_ws\RTOS_freeRTOS_Basic_LEDBlink\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="RTOS_freeRTOS_Basic_LEDBlink.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -74,22 +74,17 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-rtos_freeRTOS_basic_ledBlink.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "rtos_freeRTOS_basic_ledBlink.list"
-	@echo 'Finished building: $@'
-	@echo ' '
-
-rtos_freeRTOS_basic_ledBlink.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "rtos_freeRTOS_basic_ledBlink.bin"
+RTOS_freeRTOS_Basic_LEDBlink.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "RTOS_freeRTOS_Basic_LEDBlink.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout rtos_freeRTOS_basic_ledBlink.bin rtos_freeRTOS_basic_ledBlink.elf rtos_freeRTOS_basic_ledBlink.list
+	-$(RM) RTOS_freeRTOS_Basic_LEDBlink.elf RTOS_freeRTOS_Basic_LEDBlink.list RTOS_freeRTOS_Basic_LEDBlink.map default.size.stdout
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
