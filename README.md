@@ -7,16 +7,16 @@
 
 ## Projects:
 
-| S.No. | Project                           |
-|-------|-----------------------------------|
-| 1     | LED_Blink                         |
-| 2     | RNG                               |
-| 3     | EXTI_Interrupt_PushButton_OnBoard |
-| 4     | Timer_TIM10                       |
-| 5     | USART                             |
-| 6     | ADC_onboardTemperatureSensor      |
-| 7     | ADC_OnBoard3VPinRead              |
-| 7     | CAN                               |
+| S.No. | Project                           | Short-Info     |
+|-------|-----------------------------------| ---            |
+| 1     | led_blink                         | ---            |
+| 2     | led_blink_registerBased           | ---            |
+| 3     | pwm_TIM4_n_PWM_LED                | ---            |
+| 4     | rtos_freeRTOS_basic_ledBlink      | ---            |
+| 5     | timer_TIM10_basic_ledBlink        | ---            |
+| 6     | usart_virtualComPort              | ---            |
+| 7     | ADC_OnBoard3VPinRead              | ---            |
+| 7     | CAN                               | ---            |
 
 ## USART - usart_virtualComPort
 Tx Pin: PD8  
