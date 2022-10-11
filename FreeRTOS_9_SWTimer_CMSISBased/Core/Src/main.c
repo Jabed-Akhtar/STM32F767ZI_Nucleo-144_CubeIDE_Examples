@@ -9,35 +9,19 @@
   ******************************************************************************
   * Description:
   * 	- a source within this script: https://youtube.com/playlist?list=PLfIJKC1ud8gj1t2y36sabPT4YcKzmN_5D
-  * 	- Related doc/file can be found at location '<project-dir>/zz_docs/FreeRTOS_5_Queue_simple_noCMSIS_161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide-Page-131.jpg'
-  * 	- Task Sender_HPT_Task sends data every 2 sec
-  * 	- Task Sender_LPT_Task sends data every 1 sec
-  * 	- Task Receiver_Task reads data from Queue every 5 sec
-  * 	- Rx_UART write data to front of Queue (when the Queue is full, data
-  * 	  won't be written to Queue -> to test, write data in the beginning
-  * 	  of programm execution.)
+  * 	- Related doc/file can be found at location '<project-dir>/zz_docs/...'
   *
   * @attention
-  * Very imp note:
-  * 	- comment out #include "cmsis_os.h" , as it is not used
-  * 	- comment or remote by-default created task related stuffs
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-//#include "cmsis_os.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
-#include "queue.h"
-#include "semphr.h"
-#include "event_groups.h"
 
 #include <stdio.h>
 #include "stdlib.h"
@@ -63,18 +47,11 @@
 
 UART_HandleTypeDef huart3;
 
-//osThreadId normalTaskHandle;
+osThreadId normalTask_uartHandle;
+osThreadId normalTask_ledHandle;
+osTimerId periodicTimerHandle;
+osTimerId onceTimerHandle;
 /* USER CODE BEGIN PV */
-
-// defining Task Handlers
-xTaskHandle Sender_HPT_Handler;
-xTaskHandle Sender_LPT_Handler;
-xTaskHandle Receiver_Handler;
-
-// defining Queue Handlers
-xQueueHandle simpleQueue;
-
-uint8_t Rx_data;
 
 /* USER CODE END PV */
 
@@ -82,13 +59,12 @@ uint8_t Rx_data;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
-//void start_normalTask(void const * argument);
+void start_normalTask_uart(void const * argument);
+void start_normalTask_led(void const * argument);
+void callback_periodicTimer(void const * argument);
+void callback_onceTimer(void const * argument);
 
 /* USER CODE BEGIN PFP */
-
-void Sender_HPT_Task(void *argument); // Sender High Priority task Handler function
-void Sender_LPT_Task(void *argument); // Sender Low Priority task Handler function
-void Receiver_Task(void *argument); // Receiver task Handler function
 
 /* USER CODE END PFP */
 
@@ -132,28 +108,6 @@ int main(void)
   char stri[] = "\n---------- Programm started!!! ----------\n\n\r";
   HAL_UART_Transmit(&huart3, (uint8_t*)stri, strlen(stri), HAL_MAX_DELAY); //HAL_MAX_DELAY -> 0xFFFFFFFFU
 
-  // creating Queue **********
-  simpleQueue = xQueueCreate(5, sizeof(int));
-  if (simpleQueue == 0) // if Queue not created
-  {
-	  char *str1 = "Unable to create Queue.\n\r";
-	  HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
-  }
-  else
-  {
-	  char *str1 = "Integer Queue successfully created.\n\r";
-	  HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
-  }
-
-  // create Tasks **********
-  xTaskCreate(Sender_HPT_Task, "Sender_HPT", 128, NULL, 3, &Sender_HPT_Handler); // -> High Priority Task
-  xTaskCreate(Sender_LPT_Task, "Sender_LPT", 128, (void *)111, 2, &Sender_LPT_Handler); // -> Low Priority Task
-  xTaskCreate(Receiver_Task, "Receive", 128, NULL, 1, &Receiver_Handler); // Task for receiving data from Queue
-
-  HAL_UART_Receive_IT(&huart3, &Rx_data, 1);
-
-  vTaskStartScheduler();
-
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -164,6 +118,15 @@ int main(void)
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
+  /* Create the timer(s) */
+  /* definition and creation of periodicTimer */
+  osTimerDef(periodicTimer, callback_periodicTimer);
+  periodicTimerHandle = osTimerCreate(osTimer(periodicTimer), osTimerPeriodic, NULL);
+
+  /* definition and creation of onceTimer */
+  osTimerDef(onceTimer, callback_onceTimer);
+  onceTimerHandle = osTimerCreate(osTimer(onceTimer), osTimerOnce, NULL);
+
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
@@ -173,9 +136,13 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of normalTask */
-//  osThreadDef(normalTask, start_normalTask, osPriorityNormal, 0, 128);
-//  normalTaskHandle = osThreadCreate(osThread(normalTask), NULL);
+  /* definition and creation of normalTask_uart */
+  osThreadDef(normalTask_uart, start_normalTask_uart, osPriorityNormal, 0, 128);
+  normalTask_uartHandle = osThreadCreate(osThread(normalTask_uart), NULL);
+
+  /* definition and creation of normalTask_led */
+  osThreadDef(normalTask_led, start_normalTask_led, osPriorityNormal, 0, 128);
+  normalTask_ledHandle = osThreadCreate(osThread(normalTask_led), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -183,7 +150,7 @@ int main(void)
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
-//  osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -295,15 +262,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_7, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PB0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB0 PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -313,138 +287,72 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// Sender High Priority task Handler function
-/*
- * High Priority Task for sending Data to Queue
- */
-void Sender_HPT_Task(void *argument)
-{
-	int i=222; // data to send to Queue
-	uint32_t tickDelay = pdMS_TO_TICKS(2000);
-	while(1)
-	{
-		char *str1 = "\n\nEntered Sender_HPT_Task.\n\rAbout to Send a number To the Queue.\n\r";
-		HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
-
-		// Sending Data to Queue when token is available
-		if(xQueueSend(simpleQueue, &i, portMAX_DELAY) == pdPASS)
-		{
-			char *str2 = "Successfully sent number to the Queue.\n\rLeaving Sender_HPT_Task.\n\n\r";
-			HAL_UART_Transmit(&huart3, (uint8_t*)str2, strlen(str2), HAL_MAX_DELAY);
-		}
-
-		vTaskDelay(tickDelay); // delay/pause task for 2 sec
-	}
-}
-
-// Sender Low Priority task Handler function
-/*
- * Low Priority Task for sending Data to Queue
- */
-void Sender_LPT_Task(void *argument)
-{
-	int toSend; // data to send to Queue (comes from function argument later)
-	uint32_t tickDelay = pdMS_TO_TICKS(1000);
-	while(1)
-	{
-		toSend = (int) argument;
-		char *str1 = "Entered Sender_LPT_Task.\n\rAbout to Send a number To the Queue.\n\r";
-		HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
-
-		// Sending Data to Queue when token is available
-		xQueueSend(simpleQueue, &toSend, portMAX_DELAY);
-
-		char *str2 = "Successfully sent number to the Queue.\n\rLeaving Sender_LPT_Task.\n\n\r";
-		HAL_UART_Transmit(&huart3, (uint8_t*)str2, strlen(str2), HAL_MAX_DELAY);
-
-		vTaskDelay(tickDelay); // delay/pause task for 1 sec
-	}
-}
-
-// Receiver task Handler function
-/*
- * Receiver Task for receiving Data from Queue
- */
-void Receiver_Task(void *argument)
-{
-	int received = 0;
-	uint32_t tickDelay = pdMS_TO_TICKS(5000);
-	while(1)
-	{
-		char str[100];
-		strcpy(str, "Entered Receiver_Task.\n\rAbout to Receive a number From the Queue.\n\r");
-		HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
-
-		// Sending Data to Queue when token is available
-		if(xQueueReceive(simpleQueue, &received, portMAX_DELAY) != pdTRUE)
-		{
-			HAL_UART_Transmit(&huart3, (uint8_t*)"Error in Receiving from Queue.\n\n\r", 32, 1000);
-		}
-		else
-		{
-			sprintf(str, "Successfully Received Number %d from the Queue.\n\rLeaving Receiver_Task.\n\n\r", received);
-			HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
-		}
-
-		vTaskDelay(tickDelay); // delay/pause task for 5 sec
-	}
-}
-
-// Callback function for UART_Rx_Interrupt
-/*
- * Call back function to receive command through UART
- */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	HAL_UART_Receive_IT(huart, &Rx_data, 1);
-	int toSend = 1234567890;
-	char str[100];
-	if (Rx_data == 'r')
-	{
-		/*
-		 * the xHigherPriorityTaskWoken parameter must be initialized to pdFALSE as
-		 * it will get set to pdTRUE inside the interrupt safe API function if a context
-		 * switch is required.
-		 */
-		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-		// Sending Data to Queue when token is available
-		if(xQueueSendToFrontFromISR(simpleQueue, &toSend, &xHigherPriorityTaskWoken) == pdPASS)
-		{
-			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Blink LED when Data is sent successfully
-			sprintf(str, "Number %d Sent from ISR to Queue.\n\n", toSend);
-			HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
-		}
-
-		/*
-		 * Pass the xHigherPriorityTaskWoken value into portEND_SWITCHING_ISR(). If
-		 * xHigherPriorityTaskWoken was set to pdTRUE inside xSemaphoreGiveFromISR()
-		 * xHigherPriorityTaskWoken is still pdFALSE then calling portEND_SWITCHING_ISR()
-		 * will have no effect.
-		 */
-		portEND_SWITCHING_ISR(xHigherPriorityTaskWoken); // {}-> needed to write this in every ISR function
-	}
-}
-
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_start_normalTask */
+/* USER CODE BEGIN Header_start_normalTask_uart */
 /**
-  * @brief  Function implementing the normalTask thread.
+  * @brief  Function implementing the normalTask_uart thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_start_normalTask */
-//void start_normalTask(void const * argument)
-//{
-//  /* USER CODE BEGIN 5 */
-//  /* Infinite loop */
-//  for(;;)
-//  {
-//    osDelay(1);
-//  }
-//  /* USER CODE END 5 */
-//}
+/* USER CODE END Header_start_normalTask_uart */
+void start_normalTask_uart(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+
+  osTimerStart(periodicTimerHandle, 1000); // 1000 ms
+  /* Infinite loop */
+  for(;;)
+  {
+	  HAL_UART_Transmit(&huart3, (uint8_t *)"Sending from UART Task.\n", 23, 100);
+      osDelay(2000);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_start_normalTask_led */
+/**
+* @brief Function implementing the normalTask_led thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_start_normalTask_led */
+void start_normalTask_led(void const * argument)
+{
+  /* USER CODE BEGIN start_normalTask_led */
+  /* Infinite loop */
+  for(;;)
+  {
+	  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) // if the button is pressed
+	  {
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, 1); // set the LED
+		  osTimerStart(onceTimerHandle, 4000);
+	  }
+
+      osDelay(20);
+  }
+  /* USER CODE END start_normalTask_led */
+}
+
+/* callback_periodicTimer function */
+void callback_periodicTimer(void const * argument)
+{
+  /* USER CODE BEGIN callback_periodicTimer */
+
+	HAL_UART_Transmit(&huart3, (uint8_t *)"\nSending from PERIODIC Timer.\n", 30, 100);
+
+  /* USER CODE END callback_periodicTimer */
+}
+
+/* callback_onceTimer function */
+void callback_onceTimer(void const * argument)
+{
+  /* USER CODE BEGIN callback_onceTimer */
+
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, 0); // Reset the LED
+
+  /* USER CODE END callback_onceTimer */
+}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

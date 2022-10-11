@@ -9,13 +9,10 @@
   ******************************************************************************
   * Description:
   * 	- a source within this script: https://youtube.com/playlist?list=PLfIJKC1ud8gj1t2y36sabPT4YcKzmN_5D
-  * 	- Related doc/file can be found at location '<project-dir>/zz_docs/FreeRTOS_5_Queue_simple_noCMSIS_161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide-Page-131.jpg'
-  * 	- Task Sender_HPT_Task sends data every 2 sec
-  * 	- Task Sender_LPT_Task sends data every 1 sec
-  * 	- Task Receiver_Task reads data from Queue every 5 sec
-  * 	- Rx_UART write data to front of Queue (when the Queue is full, data
-  * 	  won't be written to Queue -> to test, write data in the beginning
-  * 	  of programm execution.)
+  * 	- Related doc/file can be found at location '<project-dir>/zz_docs/...'
+  *
+  * 	- Difference between Mutex and Binary Semaphore
+  * 	- Difference between Priority Inversion and Priority Inheritance
   *
   * @attention
   * Very imp note:
@@ -34,10 +31,10 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
+//#include "timers.h"
 #include "queue.h"
 #include "semphr.h"
-#include "event_groups.h"
+//#include "event_groups.h"
 
 #include <stdio.h>
 #include "stdlib.h"
@@ -66,15 +63,15 @@ UART_HandleTypeDef huart3;
 //osThreadId normalTaskHandle;
 /* USER CODE BEGIN PV */
 
-// defining Task Handlers
-xTaskHandle Sender_HPT_Handler;
-xTaskHandle Sender_LPT_Handler;
-xTaskHandle Receiver_Handler;
+/****** Mutex Handler *****/
+SemaphoreHandle_t simpleMutex;
+/****** Semaphore Handler *****/
+SemaphoreHandle_t binSemaphore;
 
-// defining Queue Handlers
-xQueueHandle simpleQueue;
-
-uint8_t Rx_data;
+// defining Task Handlers **********
+TaskHandle_t HPT_Task_Handler; // High Priority Task
+TaskHandle_t MPT_Task_Handler; // Medium Priority Task
+TaskHandle_t LPT_Task_Handler; // Low Priority Task
 
 /* USER CODE END PV */
 
@@ -86,9 +83,10 @@ static void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 
-void Sender_HPT_Task(void *argument); // Sender High Priority task Handler function
-void Sender_LPT_Task(void *argument); // Sender Low Priority task Handler function
-void Receiver_Task(void *argument); // Receiver task Handler function
+void HPT_Task(void *argument); // High Priority Task Handler function
+void MPT_Task(void *argument); // Medium Priority Task Handler function
+void LPT_Task(void *argument); // Low Priority Task Handler function
+void Send_Uart(char *str); // Function to send data via UART , acquire Mutex and release Mutex
 
 /* USER CODE END PFP */
 
@@ -132,26 +130,30 @@ int main(void)
   char stri[] = "\n---------- Programm started!!! ----------\n\n\r";
   HAL_UART_Transmit(&huart3, (uint8_t*)stri, strlen(stri), HAL_MAX_DELAY); //HAL_MAX_DELAY -> 0xFFFFFFFFU
 
-  // creating Queue **********
-  simpleQueue = xQueueCreate(5, sizeof(int));
-  if (simpleQueue == 0) // if Queue not created
+  /***** creating Mutex ****/
+  simpleMutex = xSemaphoreCreateMutex();
+  if (simpleMutex != NULL) // if Mutex is created
   {
-	  char *str1 = "Unable to create Queue.\n\r";
-	  HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
-  }
-  else
-  {
-	  char *str1 = "Integer Queue successfully created.\n\r";
+	  char *str1 = "Mutex Created.\n\r";
 	  HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
   }
 
-  // create Tasks **********
-  xTaskCreate(Sender_HPT_Task, "Sender_HPT", 128, NULL, 3, &Sender_HPT_Handler); // -> High Priority Task
-  xTaskCreate(Sender_LPT_Task, "Sender_LPT", 128, (void *)111, 2, &Sender_LPT_Handler); // -> Low Priority Task
-  xTaskCreate(Receiver_Task, "Receive", 128, NULL, 1, &Receiver_Handler); // Task for receiving data from Queue
+  /***** creating Binary Semaphore ****/
+  binSemaphore = xSemaphoreCreateBinary();
+  if(binSemaphore != NULL)
+  {
+	  char *str2 = "Bin-Semaphore Created.\n\r";
+	  HAL_UART_Transmit(&huart3, (uint8_t*)str2, strlen(str2), HAL_MAX_DELAY);
+  }
+  // giving binary Semaphore (!needed before taking it)
+  xSemaphoreGive(binSemaphore);
 
-  HAL_UART_Receive_IT(&huart3, &Rx_data, 1);
+  /***** create Tasks *****/
+  xTaskCreate(HPT_Task, "HPT", 128, NULL, 3, &HPT_Task_Handler);
+  xTaskCreate(MPT_Task, "MPT", 128, NULL, 2, &MPT_Task_Handler);
+  xTaskCreate(LPT_Task, "LPT", 128, NULL, 1, &LPT_Task_Handler); // Task for receiving data from Queue
 
+  // start the Schedular
   vTaskStartScheduler();
 
   /* USER CODE END 2 */
@@ -300,10 +302,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_7|GPIO_PIN_14, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PB0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PB0 PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_7|GPIO_PIN_14;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -313,117 +315,87 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// Sender High Priority task Handler function
+// Medium Priority Task Handler function
 /*
- * High Priority Task for sending Data to Queue
+ * Medium/Normal Priority Task to send data via UART
  */
-void Sender_HPT_Task(void *argument)
+void HPT_Task(void *argument)
 {
-	int i=222; // data to send to Queue
-	uint32_t tickDelay = pdMS_TO_TICKS(2000);
+	char *strtosend = "In HPT =============================\n";
+
 	while(1)
 	{
-		char *str1 = "\n\nEntered Sender_HPT_Task.\n\rAbout to Send a number To the Queue.\n\r";
-		HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
+//		char *str = "Entered HPT_Task and about to take the Bin-Semaphore.\n\n";
+		char *str = "Entered HPT_Task and about to take the Mutex.\n\n";
+		HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 
-		// Sending Data to Queue when token is available
-		if(xQueueSend(simpleQueue, &i, portMAX_DELAY) == pdPASS)
-		{
-			char *str2 = "Successfully sent number to the Queue.\n\rLeaving Sender_HPT_Task.\n\n\r";
-			HAL_UART_Transmit(&huart3, (uint8_t*)str2, strlen(str2), HAL_MAX_DELAY);
-		}
+		Send_Uart(strtosend);
 
-		vTaskDelay(tickDelay); // delay/pause task for 2 sec
+		char *str2 = "Leaving HPT_Task.\n\n";
+		HAL_UART_Transmit(&huart3, (uint8_t *)str2, strlen(str2), HAL_MAX_DELAY);
+
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggling LED-0 before Leaving HPT_Task
+
+		vTaskDelay(750);
 	}
 }
 
-// Sender Low Priority task Handler function
+// Medium Priority Task Handler function
 /*
- * Low Priority Task for sending Data to Queue
+ * Medium/Normal Priority Task to send data via UART
  */
-void Sender_LPT_Task(void *argument)
+void MPT_Task(void *argument)
 {
-	int toSend; // data to send to Queue (comes from function argument later)
-	uint32_t tickDelay = pdMS_TO_TICKS(1000);
 	while(1)
 	{
-		toSend = (int) argument;
-		char *str1 = "Entered Sender_LPT_Task.\n\rAbout to Send a number To the Queue.\n\r";
-		HAL_UART_Transmit(&huart3, (uint8_t*)str1, strlen(str1), HAL_MAX_DELAY);
+		char *str = "In MPT =============================.\n\n";
+		HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 
-		// Sending Data to Queue when token is available
-		xQueueSend(simpleQueue, &toSend, portMAX_DELAY);
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7); // Toggling LED-1 before Leaving MPT_Task
 
-		char *str2 = "Successfully sent number to the Queue.\n\rLeaving Sender_LPT_Task.\n\n\r";
-		HAL_UART_Transmit(&huart3, (uint8_t*)str2, strlen(str2), HAL_MAX_DELAY);
-
-		vTaskDelay(tickDelay); // delay/pause task for 1 sec
+		vTaskDelay(2000);
 	}
 }
 
-// Receiver task Handler function
+// Low Priority Task Handler function
 /*
- * Receiver Task for receiving Data from Queue
+ * Low Priority Task to send data via UART
  */
-void Receiver_Task(void *argument)
+void LPT_Task(void *argument)
 {
-	int received = 0;
-	uint32_t tickDelay = pdMS_TO_TICKS(5000);
+	char *strtosend = "In LPT =============================\n";
+
 	while(1)
 	{
-		char str[100];
-		strcpy(str, "Entered Receiver_Task.\n\rAbout to Receive a number From the Queue.\n\r");
-		HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+//		char *str = "Entered LPT_Task and about to take the Bin-Semaphore.\n\n";
+		char *str = "Entered LPT_Task and about to take the Mutex.\n\n";
+		HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 
-		// Sending Data to Queue when token is available
-		if(xQueueReceive(simpleQueue, &received, portMAX_DELAY) != pdTRUE)
-		{
-			HAL_UART_Transmit(&huart3, (uint8_t*)"Error in Receiving from Queue.\n\n\r", 32, 1000);
-		}
-		else
-		{
-			sprintf(str, "Successfully Received Number %d from the Queue.\n\rLeaving Receiver_Task.\n\n\r", received);
-			HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
-		}
+		Send_Uart(strtosend);
 
-		vTaskDelay(tickDelay); // delay/pause task for 5 sec
+		char *str2 = "Leaving LPT_Task.\n\n";
+		HAL_UART_Transmit(&huart3, (uint8_t *)str2, strlen(str2), HAL_MAX_DELAY);
+
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // Toggling LED-2 before Leaving HPT_Task
+
+		vTaskDelay(1000);
 	}
 }
 
-// Callback function for UART_Rx_Interrupt
-/*
- * Call back function to receive command through UART
- */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+// Function to send data via UART
+void Send_Uart(char *str)
 {
-	HAL_UART_Receive_IT(huart, &Rx_data, 1);
-	int toSend = 1234567890;
-	char str[100];
-	if (Rx_data == 'r')
-	{
-		/*
-		 * the xHigherPriorityTaskWoken parameter must be initialized to pdFALSE as
-		 * it will get set to pdTRUE inside the interrupt safe API function if a context
-		 * switch is required.
-		 */
-		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	// for Binary-Semaphore
+//	xSemaphoreTake(binSemaphore, portMAX_DELAY);
+//	HAL_Delay(5000); // Delay of 5 sec for testing
+//	HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
+//	xSemaphoreGive(binSemaphore);
 
-		// Sending Data to Queue when token is available
-		if(xQueueSendToFrontFromISR(simpleQueue, &toSend, &xHigherPriorityTaskWoken) == pdPASS)
-		{
-			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Blink LED when Data is sent successfully
-			sprintf(str, "Number %d Sent from ISR to Queue.\n\n", toSend);
-			HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
-		}
-
-		/*
-		 * Pass the xHigherPriorityTaskWoken value into portEND_SWITCHING_ISR(). If
-		 * xHigherPriorityTaskWoken was set to pdTRUE inside xSemaphoreGiveFromISR()
-		 * xHigherPriorityTaskWoken is still pdFALSE then calling portEND_SWITCHING_ISR()
-		 * will have no effect.
-		 */
-		portEND_SWITCHING_ISR(xHigherPriorityTaskWoken); // {}-> needed to write this in every ISR function
-	}
+	// For Mutex
+	xSemaphoreTake(simpleMutex, portMAX_DELAY);
+	HAL_Delay(5000); // Delay of 5 sec for testing
+	HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
+	xSemaphoreGive(simpleMutex);
 }
 
 /* USER CODE END 4 */
