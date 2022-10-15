@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (9-2020-q2-update)
+# Toolchain: GNU Tools for STM32 (10.3-2021.10)
 ################################################################################
 
 -include ../makefile.init
@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := usart_virtualComPort
+BUILD_ARTIFACT_NAME := USART_VirtualComPort
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-usart_virtualComPort.elf \
+USART_VirtualComPort.elf \
+
+MAP_FILES += \
+USART_VirtualComPort.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-usart_virtualComPort.list \
-
-OBJCOPY_BIN += \
-usart_virtualComPort.bin \
+USART_VirtualComPort.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: usart_virtualComPort.elf secondary-outputs
+main-build: USART_VirtualComPort.elf secondary-outputs
 
 # Tool invocations
-usart_virtualComPort.elf: $(OBJS) $(USER_OBJS) P:\zz_Kos_Bussi\KosCom_N_KosProj\zzzzz_ProductsIncomeMID\p4_MCUsNMPUsProjects\projects_ws\stm32f7_cubeIDE_ws\usart_virtualComPort\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "usart_virtualComPort.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"P:\zz_Kos_Bussi\KosCom_N_KosProj\zzzzz_ProductsIncomeMID\p4_MCUsNMPUsProjects\projects_ws\stm32f7_cubeIDE_ws\usart_virtualComPort\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="usart_virtualComPort.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+USART_VirtualComPort.elf USART_VirtualComPort.map: $(OBJS) $(USER_OBJS) D:\GitHubDIR\STM32F767ZI_Nucleo-144_CubeIDE_Examples_ws\USART_VirtualComPort\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "USART_VirtualComPort.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\GitHubDIR\STM32F767ZI_Nucleo-144_CubeIDE_Examples_ws\USART_VirtualComPort\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="USART_VirtualComPort.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,22 +70,17 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-usart_virtualComPort.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "usart_virtualComPort.list"
-	@echo 'Finished building: $@'
-	@echo ' '
-
-usart_virtualComPort.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "usart_virtualComPort.bin"
+USART_VirtualComPort.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "USART_VirtualComPort.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout usart_virtualComPort.bin usart_virtualComPort.elf usart_virtualComPort.list
+	-$(RM) USART_VirtualComPort.elf USART_VirtualComPort.list USART_VirtualComPort.map default.size.stdout
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
