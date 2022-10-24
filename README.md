@@ -7,15 +7,16 @@
 
 ## Projects:
 
-| S.No. | Project                           | Short-Info     |
-|-------|-----------------------------------| ---            |
-| 1     | EXTI_Interrupt_PushButton_OnBoard | ---            |
-| 2     | LED_Blink                         | ---            |
-| 3     | led_blink_registerBased           | ---            |
-| 4     | pwm_TIM4_n_PWM_LED                | ---            |
-| 5     | RTOS_freeRTOS_Basic_LEDBlink      | ---            |
-| 6     | timer_TIM10_basic_ledBlink        | ---            |
-| 7     | usart_virtualComPort              | ---            |
+| S.No. | Project                           | Short-Info                                                |
+|-------|-----------------------------------| ---                                                       |
+| 1     | EXTI_Interrupt_PushButton_OnBoard | STM32CubeMX v6.5.0 - Firmware: STM32Cube FW_F7 v1.16.2    |
+| 2     | LED_Blink                         | STM32CubeMX v6.5.0 - Firmware: STM32Cube FW_F7 v1.16.2    |
+| 3     | led_blink_registerBased           | STM32CubeMX v6.5.0 - Firmware: STM32Cube FW_F7 v1.16.2    |
+| 4     | pwm_TIM4_n_PWM_LED                | STM32CubeMX v6.5.0 - Firmware: STM32Cube FW_F7 v1.16.2    |
+| 5     | RTOS_freeRTOS_Basic_LEDBlink      | STM32CubeMX v6.5.0 - Firmware: STM32Cube FW_F7 v1.16.2    |
+| 6     | timer_TIM10_basic_ledBlink        | STM32CubeMX v6.5.0 - Firmware: STM32Cube FW_F7 v1.16.2    |
+| 7     | usart_virtualComPort              | STM32CubeMX v6.5.0 - Firmware: STM32Cube FW_F7 v1.16.2    |
+| 8     | MemoryOrg_Pointer                 | STM32CubeMX v6.0.0 - Firmware: STM32Cube FW_F7 v1.16.0    |
 
 ## USART - usart_virtualComPort
 Tx Pin: PD8  
