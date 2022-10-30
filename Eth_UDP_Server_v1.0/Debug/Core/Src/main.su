@@ -1,0 +1,13 @@
+../Core/Src/main.c:113:5:main	80	static
+../Core/Src/main.c:212:6:SystemClock_Config	88	static
+../Core/Src/main.c:266:13:MX_ADC1_Init	24	static
+../Core/Src/main.c:318:13:MX_TIM11_Init	8	static
+../Core/Src/main.c:349:13:MX_USART3_UART_Init	8	static
+../Core/Src/main.c:384:13:MX_GPIO_Init	56	static
+../Core/Src/main.c:410:6:vAplicationIdleHook	4	static,ignoring_inline_asm
+../Core/Src/main.c:415:6:HeartBeatCallback	16	static
+../Core/Src/main.c:420:6:vTemp_Task	136	static
+../Core/Src/main.c:466:6:vUDP_Task	160	static
+../Core/Src/main.c:534:6:vGateKeeper_Task	216	static
+../Core/Src/main.c:597:6:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Src/main.c:614:6:Error_Handler	4	static

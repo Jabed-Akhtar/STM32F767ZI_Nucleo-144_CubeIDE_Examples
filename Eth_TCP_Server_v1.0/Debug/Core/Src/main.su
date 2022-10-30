@@ -1,0 +1,7 @@
+main.c:96:5:main	64	static
+main.c:146:6:SystemClock_Config	232	static
+main.c:203:13:MX_ADC1_Init	24	static
+main.c:253:13:MX_USART3_UART_Init	8	static
+main.c:288:13:MX_GPIO_Init	56	static
+main.c:324:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:341:6:Error_Handler	4	static

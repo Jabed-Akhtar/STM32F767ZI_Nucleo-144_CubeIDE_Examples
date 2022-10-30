@@ -4,18 +4,27 @@
   * @file           : main.c
   * @brief          : Main program body
   ******************************************************************************
-  * @author         : Jabed-Akhtar
+  * @author         : Jabed-Akhtar (GitHub)
   * @date           : 12.03.2022
   ******************************************************************************
-  * @Description
-  * 	- IP Address		: 192.168.000.100
-  * 	- Gateway Address	: 192.168.000.001
-  *
   * @attention
-  *		- ...
+  *		-> ---
+  *
+  *	Imp note:
+  *		- ---
+  *
+  * Project-Related infos:
+  * 	- a source used within this project: https://controllerstech.com/stm32-ethenret-2-udp-server/
+  * 	- evicences/pics can be found at location: '<project-main-folder>/zz_docs/***.***'
+  *
+  * Description
+  * 	- This project is very basic. Only connection through ping (ICMP) (But not yet working)
+  * 	- MCU-Board IP Address		: 192.168.000.100
+  * 	- MCU-Board Gateway Address	: 192.168.000.001
   *
   ******************************************************************************
   */
+/*
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"

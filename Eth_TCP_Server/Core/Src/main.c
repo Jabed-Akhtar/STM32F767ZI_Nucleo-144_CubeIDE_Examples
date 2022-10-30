@@ -4,14 +4,22 @@
   * @file           : main.c
   * @brief          : Main program body
   ******************************************************************************
+  * @author			: Jabed-Akhtar (GitHub)
+  * @date			: ---
+  ******************************************************************************
   * @attention
+  *		-> ---
   *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
+  *	Imp note:
+  *		- ---
   *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * Project-Related infos:
+  * 	- a source used within this project: https://controllerstech.com/stm32-ethernet-4-tcp-server/
+  * 	- evicences/pics can be found at location: '<project-main-folder>/zz_docs/***.***'
+  *
+  *	Description:
+  *		- This project is very basic. Only connection through ping (ICMP)
+  *		- MCU-Board IP Address: 192.168.000.111
   *
   ******************************************************************************
   */
