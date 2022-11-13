@@ -55,7 +55,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SERV_PORT 2414			// Server port the Client(s) will be connected to.
+#define SERVADDR "192.168.0.199" //.254.81.179" //"169.254.81.179" n
+#define SERV_PORT 2414			// Server port this Client will be connected to.
 #define MAXBUFFLEN 100			// Maximum string length
 /* USER CODE END PD */
 
@@ -81,7 +82,7 @@ static void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 void vAplicationIdleHook(void);					// Task > Idle Hook
-void task_UDPServer(void *pvParameters);		// Task for this UDP-Server
+void task_UDPClient(void *pvParameters);		// Task for this UDP-Server
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -151,7 +152,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  xTaskCreate(task_UDPServer, "task_UDPServer", configMINIMAL_STACK_SIZE*4, NULL, 4, NULL);	// Thread/Task for UDP Server
+  xTaskCreate(task_UDPClient, "task_UDPClient", configMINIMAL_STACK_SIZE*4, NULL, 4, NULL);	// Thread/Task for UDP Client
 
   /***** Starting Scheduler *****/
   vTaskStartScheduler();
@@ -309,12 +310,12 @@ void vAplicationIdleHook(void){
  * 		- Wait for msg from the Client
  * 		- Sends Hello msg to Client on receiving any msg from the Client
  */
-void task_UDPServer(void *pvParameters)
+void task_UDPClient(void *pvParameters)
 {
 	/* --- Variables -----------------------------------------------------------*/
-	int					sockfd;					// Socket for this Server
+	int					sockfd;					// Socket for this Client
 	int					addr_len;				// Size of sock Addr for recvfrom(...);
-	struct sockaddr_in 	servaddr, cliaddr;		// Struct for this UDP-Server and for Client(s)
+	struct sockaddr_in 	servaddr_toConn, cliaddr;		// Struct for the UDP-Server and for this Client
 	int					numBytes;				// Number of Bytes sent/received
 	char 				buff[MAXBUFFLEN];		// Buffer to save Rx/Tx Data
 
@@ -326,16 +327,16 @@ void task_UDPServer(void *pvParameters)
 	}
 
 	// Assignments to servaddr
-	servaddr.sin_family = AF_INET;					// Address-Family -> Internet
-	servaddr.sin_addr.s_addr = htonl(INADDR_ANY); 	// Auto-Fill with MCU-Board IP-Address
-	servaddr.sin_port = htons(SERV_PORT);			// This Server port
+	servaddr_toConn.sin_family = AF_INET;					// Address-Family -> Internet
+	servaddr_toConn.sin_addr.s_addr = inet_addr(SERVADDR); 	// Auto-Fill with MCU-Board IP-Address
+	servaddr_toConn.sin_port = htons(SERV_PORT);			// The Server port
 
-	/* --- 2. Bind Socket to the Server Address --------------------------------*/
-	int b_ret = bind(sockfd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr));
-	if(b_ret == -1)
-	{
-		exit(0);
-	}
+//	/* --- 2. Bind Socket to the Server Address --------------------------------*/
+//	int b_ret = bind(sockfd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+//	if(b_ret == -1)
+//	{
+//		exit(0);
+//	}
 
 	/****** Endless-Loop *****/
 	while(1)
@@ -344,18 +345,21 @@ void task_UDPServer(void *pvParameters)
 		memset(buff, 0, sizeof(buff));
 
 		/* --- Receiving from Client -------------------------------------------*/
-		addr_len = sizeof(struct sockaddr);
-		numBytes = recvfrom(sockfd, buff, MAXBUFFLEN, 0, (struct sockaddr *)&cliaddr, &addr_len);
-		if(numBytes==-1)
-		{
-			exit(1);
-		}
+//		addr_len = sizeof(struct sockaddr);
+//		numBytes = recvfrom(sockfd, buff, MAXBUFFLEN, 0, (struct sockaddr *)&servaddr_toConn, &addr_len);
+//		if(numBytes==-1)
+//		{
+//			exit(1);
+//		}
 
 		/* --- Sending to Client -----------------------------------------------*/
-		sendto(sockfd, "Hello from Server!\n", 20, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));
+		sendto(sockfd, "Hello from Client!\n", 20, 0, (struct sockaddr *)&servaddr_toConn, sizeof(struct sockaddr));
 
 		// Toggle Green LED after sending out msg to the Client
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+
+		HAL_Delay(1000);
+
 
 		/* --- 3. Close the Socket ---------------------------------------------*/
 //		close(sockfd); 	/* Close socket at the end of programm. !Here it could not be a good idea, */

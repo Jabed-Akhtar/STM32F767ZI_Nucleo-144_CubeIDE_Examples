@@ -12046,19 +12046,19 @@ void MX_LWIP_Init(void)
  800478a:	b08e      	sub	sp, #56	; 0x38
  800478c:	af04      	add	r7, sp, #16
   /* IP addresses initialization */
-  IP_ADDRESS[0] = 192;
+  IP_ADDRESS[0] = 169;			// 192;
  800478e:	4ba0      	ldr	r3, [pc, #640]	; (8004a10 <MX_LWIP_Init+0x288>)
- 8004790:	22c0      	movs	r2, #192	; 0xc0
+ 8004790:	22a9      	movs	r2, #169	; 0xa9
  8004792:	701a      	strb	r2, [r3, #0]
-  IP_ADDRESS[1] = 168;
+  IP_ADDRESS[1] = 254;			// 168;
  8004794:	4b9e      	ldr	r3, [pc, #632]	; (8004a10 <MX_LWIP_Init+0x288>)
- 8004796:	22a8      	movs	r2, #168	; 0xa8
+ 8004796:	22fe      	movs	r2, #254	; 0xfe
  8004798:	705a      	strb	r2, [r3, #1]
-  IP_ADDRESS[2] = 178;
+  IP_ADDRESS[2] = 81; 		// 178;
  800479a:	4b9d      	ldr	r3, [pc, #628]	; (8004a10 <MX_LWIP_Init+0x288>)
- 800479c:	22b2      	movs	r2, #178	; 0xb2
+ 800479c:	2251      	movs	r2, #81	; 0x51
  800479e:	709a      	strb	r2, [r3, #2]
-  IP_ADDRESS[3] = 204;
+  IP_ADDRESS[3] = 204;			// 204;
  80047a0:	4b9b      	ldr	r3, [pc, #620]	; (8004a10 <MX_LWIP_Init+0x288>)
  80047a2:	22cc      	movs	r2, #204	; 0xcc
  80047a4:	70da      	strb	r2, [r3, #3]
@@ -12078,17 +12078,17 @@ void MX_LWIP_Init(void)
  80047b8:	4b96      	ldr	r3, [pc, #600]	; (8004a14 <MX_LWIP_Init+0x28c>)
  80047ba:	2200      	movs	r2, #0
  80047bc:	70da      	strb	r2, [r3, #3]
-  GATEWAY_ADDRESS[0] = 192;
+  GATEWAY_ADDRESS[0] = 169;		// 192;
  80047be:	4b96      	ldr	r3, [pc, #600]	; (8004a18 <MX_LWIP_Init+0x290>)
- 80047c0:	22c0      	movs	r2, #192	; 0xc0
+ 80047c0:	22a9      	movs	r2, #169	; 0xa9
  80047c2:	701a      	strb	r2, [r3, #0]
-  GATEWAY_ADDRESS[1] = 168;
+  GATEWAY_ADDRESS[1] = 254;		// 168;
  80047c4:	4b94      	ldr	r3, [pc, #592]	; (8004a18 <MX_LWIP_Init+0x290>)
- 80047c6:	22a8      	movs	r2, #168	; 0xa8
+ 80047c6:	22fe      	movs	r2, #254	; 0xfe
  80047c8:	705a      	strb	r2, [r3, #1]
-  GATEWAY_ADDRESS[2] = 178;
+  GATEWAY_ADDRESS[2] = 81;	// 178;
  80047ca:	4b93      	ldr	r3, [pc, #588]	; (8004a18 <MX_LWIP_Init+0x290>)
- 80047cc:	22b2      	movs	r2, #178	; 0xb2
+ 80047cc:	2251      	movs	r2, #81	; 0x51
  80047ce:	709a      	strb	r2, [r3, #2]
   GATEWAY_ADDRESS[3] = 1;
  80047d0:	4b91      	ldr	r3, [pc, #580]	; (8004a18 <MX_LWIP_Init+0x290>)
