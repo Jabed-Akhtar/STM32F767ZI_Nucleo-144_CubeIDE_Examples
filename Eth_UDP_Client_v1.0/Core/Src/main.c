@@ -55,7 +55,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SERVADDR "192.168.0.199" //.254.81.179" //"169.254.81.179" n
+#define SERVADDR "169.254.181.186" //"169.254.81.179" n // Address of the Server to connect this Client to.
 #define SERV_PORT 2414			// Server port this Client will be connected to.
 #define MAXBUFFLEN 100			// Maximum string length
 /* USER CODE END PD */
@@ -331,8 +331,8 @@ void task_UDPClient(void *pvParameters)
 	servaddr_toConn.sin_addr.s_addr = inet_addr(SERVADDR); 	// Auto-Fill with MCU-Board IP-Address
 	servaddr_toConn.sin_port = htons(SERV_PORT);			// The Server port
 
-//	/* --- 2. Bind Socket to the Server Address --------------------------------*/
-//	int b_ret = bind(sockfd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+	/* --- 2. Bind Socket to the Server Address --------------------------------*/
+//	int b_ret = bind(sockfd, (struct sockaddr *)&servaddr_toConn, sizeof(struct sockaddr));
 //	if(b_ret == -1)
 //	{
 //		exit(0);
@@ -353,7 +353,11 @@ void task_UDPClient(void *pvParameters)
 //		}
 
 		/* --- Sending to Client -----------------------------------------------*/
-		sendto(sockfd, "Hello from Client!\n", 20, 0, (struct sockaddr *)&servaddr_toConn, sizeof(struct sockaddr));
+		int n = sendto(sockfd, "Hello from Client!\n", 20, 0, (struct sockaddr *)&servaddr_toConn, sizeof(struct sockaddr));
+		if(n == -1)
+		{
+			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+		}
 
 		// Toggle Green LED after sending out msg to the Client
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);

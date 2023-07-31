@@ -5,6 +5,9 @@
 **Description:**
 > main file is saved at location '\<project-name>\Core\Src\main.c'
 
+**Useful links:**  
+> [https://github.com/STMicroelectronics/STM32CubeF7.git](https://github.com/STMicroelectronics/STM32CubeF7.git)    
+
 ## Projects:
 
 | S.No. | Project                           | Short-Info                                                |

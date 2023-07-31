@@ -3,6 +3,6 @@ main.c:181:6:SystemClock_Config	232	static
 main.c:238:13:MX_USART3_UART_Init	8	static
 main.c:273:13:MX_GPIO_Init	56	static
 main.c:302:6:vAplicationIdleHook	4	static,ignoring_inline_asm
-main.c:313:6:task_UDPClient	160	static
-main.c:400:6:HAL_TIM_PeriodElapsedCallback	16	static
-main.c:417:6:Error_Handler	4	static
+main.c:313:6:task_UDPClient	168	static
+main.c:404:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:421:6:Error_Handler	4	static
