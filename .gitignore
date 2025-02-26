@@ -2,12 +2,14 @@
 > Created by https://www.toptal.com/developers/gitignore/api/eclipse  
 > Edit at https://www.toptal.com/developers/gitignore?templates=eclipse  
 
+**/.settings/
+
 # Ignore build artifacts
 **/Debug/
 **/Release/
 
 ### Eclipse ###
-.metadata
+**/.metadata/
 bin/
 tmp/
 *.tmp
